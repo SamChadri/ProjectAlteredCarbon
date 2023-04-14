@@ -41,7 +41,8 @@ void main(int argc, char *argv[]){
 
     struct ASTNode *root;
     printf("Starting main\n");
-    root = r_create_tree(NULL, NULL,NULL,NULL);
+    //root = r_create_tree(NULL, NULL,NULL,NULL);
+    root = pratt_create_tree(0, NULL);
     printf("%d\n", interpretAST(root));
 
     exit(0);

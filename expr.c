@@ -21,6 +21,77 @@ int token_op(int tok){
     }
 }
 static char *ASTop[] = { "+", "-", "*", "/" };
+static int OpPrec[] = { 0, 0, 10, 10};
+
+static int op_precedence(int tokentype) {
+  int prec = OpPrec[tokentype];
+  if (prec != 0 && prec != 10) {
+    fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
+    exit(1);
+  }
+  return (prec);
+}
+
+struct ASTNode * scan_leaf(){
+    struct ASTNode * n;
+    scan(&token);
+    switch (token.token) {
+        case T_INTLIT:
+            printf("Making Leaf node %d \n", token.int_value);
+            n = make_leaf_node(A_INTLIT, token.int_value);
+            return (n);
+        default:
+            fprintf(stderr, "syntax error on line %d, token %s\n", Line, ASTop[token.token]);
+            exit(1);
+    }
+}
+
+
+struct ASTNode * pratt_create_tree(int ptp, struct ASTNode *left)
+{
+    struct ASTNode * n, *root;
+    int tokentype;
+
+    printf("Starting creation \n");
+    if(left == NULL){
+        left = scan_leaf();
+        printf("Initiating with leaf %d \n", left->value );
+
+    }
+    scan(&token);
+
+    if(token.token == T_EOF){
+        printf("END OF FILE RETURNING \n");
+        return left;
+    }
+    int op_token = token_op(token.token);
+
+    n = make_ast_node(op_token, NULL, NULL, 0);
+    printf("Creating token node: %s \n", ASTop[op_token]);
+    if(op_precedence(op_token) > ptp){
+        printf("Previous token: '%s'. '%s' Takes precedence \n",ASTop[ptp],ASTop[op_token]);
+        n->left = left->right;
+        left->right = n;
+        n->right = scan_leaf();
+        root = pratt_create_tree(ptp, left);
+        if(root == NULL){
+            return left;
+        }else{
+            return root;
+        }
+    }
+    else{
+        printf("No Precedence found \n",ASTop[op_token], ASTop[ptp]);
+
+        n->left = left;
+        n->right = scan_leaf();
+
+        root = pratt_create_tree(op_token, n);
+        return root;
+    }
+
+    
+}
 
 
 struct ASTNode * r_create_tree(struct ASTNode *n, struct ASTNode * left, struct ASTNode * right, struct ASTNode *root)
