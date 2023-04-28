@@ -13,6 +13,10 @@ void init(char * file){
         fprintf(stderr,"Unable to open %s: %s\n", file, strerror(errno));
         exit(1);
     }
+      if ((Outfile = fopen("out.asm", "w")) == NULL) {
+        fprintf(stderr, "Unable to create out.asm: %s\n", strerror(errno));
+        exit(1);
+    }
 }
 
 char *tokstr[] = { "+", "-", "*", "/", "intlit" };
@@ -43,7 +47,13 @@ void main(int argc, char *argv[]){
     printf("Starting main\n");
     //root = r_create_tree(NULL, NULL,NULL,NULL);
     root = pratt_create_tree(0, NULL);
-    printf("%d\n", interpretAST(root));
+    int result = interpretAST(root);
+    printf("Done doing things\n");
+    printf("%d\n", result);
+    printf("Done interpreting...\n");
+    genereate_code(root);
+
+    fclose(Outfile);
 
     exit(0);
 

@@ -1,5 +1,7 @@
-parser: expr.c interp.c main.c scan.c tree.c
-	cc -o parser -g expr.c interp.c main.c scan.c tree.c
+comp: expr.c main.c scan.c tree.c qgen.c gen.c
+	cc -o comp -g expr.c gen.c qgen.c main.c scan.c tree.c
 
 clean:
-	rm -f parser *.o:
+	rm -f comp *.o:
+	rm out.asm
+	rm -rf *.dSYM

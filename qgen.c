@@ -3,22 +3,23 @@
 #include "decl.h"
 
 
-static char * creg_list = {"r1","r2","r3"};
-static char * qreg_list = {"q1","q2","q3"};
-int free_qreg[3];
-int free_creg[3];
-int num_creg = 3;
-int num_qreg = 3;
+static char * creg_list [] = {"r1","r2","r3"};
+static char * qreg_list [] = {"q1","q2"};
+int free_qreg[2] = {0,0};
+int free_creg[2] = {0,0};
+int num_creg = 2;
+int num_qreg = 2;
+int bit_size = 4;
 
 static void free_q_registers(){
-    for(int i =0; i < 3; i ++){
+    for(int i =0; i < num_qreg; i ++){
         free_qreg[0] = 0;
     }
 }
 
 
 static void free_c_registers(){
-    for(int i =0; i < 3; i ++){
+    for(int i =0; i < num_creg; i ++){
         free_creg[0] = 0;
     }
 }
@@ -35,19 +36,35 @@ static int allocate_creg(){
 }
 
 static int allocate_qreg(){
+    printf("Allocating register...\n");
     for(int i = 0; i < num_qreg; i++){
-        if(free_qreg[i] == 0){
+        if(free_qreg[i] == 2){
+            printf("FOUND 2...\n");
             free_qreg[i] = 1;
+            printf("Found already created register %s\n", qreg_list[i]);
+
             return i;
         }
+        if(free_qreg[i] == 0){
+            printf("FOUND 0...at %d\n", i);
+            free_qreg[i] = 1;
+            printf("WHOOHS\n");
+            printf("creating new register %s\n", qreg_list[0]);
+            fprintf(Outfile, "qreg %s[%d];\n", qreg_list[i], bit_size);
+
+            return i;
+        }
+
     }
+
     fprintf(stderr, "Out of q_registers!\n");
     exit(1);
 }
 
 
+
 static int num_bits(int num){
-    int num_array[32];
+    int num_array[8];
     int count = 0;
 
     for(;num > 0; count++){
@@ -57,26 +74,107 @@ static int num_bits(int num){
 
     return count;
 }
+static void create_adder_gates(){
+    fputs("gate majority a,b,c{ \n" 
+          "\tcx c,b;\n" 
+          "\tcx c,a;\n"
+          "\tccx a,b,c;\n" 
+          "}\n",
+          Outfile
+    );
+
+    fputs("gate unmaj a,b,c{ \n" 
+          "\tccx a,b,c;\n" 
+          "\tcx c,a;\n"
+          "\tcx a,b;\n" 
+          "}\n",
+          Outfile
+    );
 
 
-static void load_cregister(int val){
+    fputs("gate add4 a0,a1,a2,a3,b0,b1,b2,b3,cin,cout { \n" 
+          "\tmajority cin,b0,a0;\n" 
+          "\tmajority a0,b1,a1;\n"
+          "\tmajority a1,b2,a2;\n"
+          "\tmajority a2,b3,a3;\n"
+          "\tcx a3,cout;\n"
+          "\tunmaj a2,b3,a3;\n"
+          "\tunmaj a1,b2,a2;\n"
+          "\tunmaj a0,b1,a1;\n"
+          "\tunmaj cin,b0,a0;\n" 
+          "}\n",
+          Outfile
+    );
+
+    fputs("qreg carry[2];\n", Outfile);
+    fputs("creg ans[5];\n", Outfile);
+}
+
+void q_load_preamble(){
+    printf("Loading Preamble...\n");
+    fputs("OPENQASM 2.0;\n"
+          "include \"qelib1.inc\";\n", Outfile);
+    printf("Loading adder gates...\n");
+    create_adder_gates();
+    printf("Done with preamble...\n");
+
+
+}
+
+
+static load_int(int num_bits, int num){
+
+}
+
+
+static void create_cregister(int val){
     int creg_num = allocate_creg();
-    fprintf(Outfile, "creg %s[%d]",creg_list[creg_num], bitnum);
-    return creg_num;
-}
-
-static void allocate_qregister(int val){
-    int qreg_num = allocate_qreg();
-    int bit_size = num_bits(val);
-    fprintf(Outfile, "creg %s[%d]",creg_list[qreg_num], bitnum);
-    return qreg_num;
-}
-//Classical addition using bits
-int qc_add(int r1, int r2){
+    fprintf(Outfile, "creg %s[%d]",creg_list[creg_num], Outfile);
     
 }
 
-// Quantum addition using qubits
-int qq_add(int r1, int r2){
 
+static void reset_qreg(int reg){
+    fprintf(Outfile, "reset %s; \n", qreg_list[reg]);
+    free_qreg[reg];
 }
+
+int load_qregister(int val){
+
+    int qreg_num = allocate_qreg();
+    printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
+    for(int i = 0; val > 0; i++){
+        int bit_val = val % 2;
+        val = val / 2;
+        if(bit_val == 1){
+            fprintf(Outfile, "x %s[%d];\n",qreg_list[qreg_num],i );
+        }
+    }
+    printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
+    return qreg_num;
+}
+//Classical addition using bits
+int q_add(int r1, int r2){
+     printf("Adding gates %s %s\n", qreg_list[r1], qreg_list[r2]);
+
+    fprintf(Outfile, "add4 %s[0], %s[1], %s[2], %s[3], %s[0], %s[1], %s[2], %s[3], carry[0], carry[1];\n",
+        qreg_list[r1], qreg_list[r1], qreg_list[r1], qreg_list[r1],
+        qreg_list[r2], qreg_list[r2], qreg_list[r2], qreg_list[r2]);
+    
+    reset_qreg(r1);
+    return r2;
+}
+
+int measure_result(int reg){
+
+    fprintf(Outfile, "measure %s[0] -> ans[0];\n", qreg_list[reg]);
+    fprintf(Outfile, "measure %s[1] -> ans[1];\n", qreg_list[reg]);
+    fprintf(Outfile, "measure %s[2] -> ans[2];\n", qreg_list[reg]);
+    fprintf(Outfile, "measure %s[3] -> ans[3];\n", qreg_list[reg]);
+    fprintf(Outfile, "measure carry[1] -> ans[4];\n", qreg_list[reg]);
+}
+
+
+
+
+// Quantum addition using qubits
