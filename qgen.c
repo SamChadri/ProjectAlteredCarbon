@@ -91,6 +91,38 @@ static void create_adder_gates(){
           Outfile
     );
 
+    fputs("gate subout c,b,a{ \n"
+	      "\tccx a,b,c;\n"
+	      "\tcx a,b;\n"
+	      "\tcx b,a;\n"
+	      "\tcx c,a;\n"
+	      "\tccx b,c,a;\n"
+         "}\n",
+         Outfile
+    );
+
+    fputs("gate diff c,b,a{ \n"
+	      "\tccx b,c,a;\n"
+	      "\tcx c,a;\n"
+	      "\tcx b,a;\n"
+	      "\tcx a,b;\n"
+	      "\tccx a,b,c;\n"
+	      "\tmajority c,b,a;\n"
+	      "\tx a;\n"
+	      "\tx b;\n"
+	      "\tx c;\n"
+	      "\tccx c,b,a;\n"
+          "}\n",
+          Outfile
+    );
+
+    fputs("gate sub4 a0,a1,a2,a3,b0,b1,b2,b3,cin,cout {\n "
+	      "\tsubout cin,b0,a0;\n"
+	      "\tsubout a0,b1,a1;\n"
+	      "\tsubout a1,b2,a2;\n"
+	      "\tsubout a2,b3,a3;\n" 
+         "}\n",
+          Outfile);
 
     fputs("gate add4 a0,a1,a2,a3,b0,b1,b2,b3,cin,cout { \n" 
           "\tmajority cin,b0,a0;\n" 
@@ -163,6 +195,34 @@ int q_add(int r1, int r2){
     
     reset_qreg(r1);
     return r2;
+}
+int q_subtract(int r1, int r2){
+    printf("Adding gates %s %s\n", qreg_list[r1], qreg_list[r2]);
+    fprintf(Outfile, "sub4 %s[0], %s[1], %s[2], %s[3], %s[0], %s[1], %s[2], %s[3], carry[0], carry[1];\n \n",
+        qreg_list[r1], qreg_list[r1], qreg_list[r1], qreg_list[r1],
+        qreg_list[r2], qreg_list[r2], qreg_list[r2], qreg_list[r2]);
+
+    fprintf(Outfile,
+            "cx %s[2],carry[1];\n"
+            "diff carry[1],%s[3],%s[3];\n"
+            "reset carry[1];\n"
+            "cx %s[1], carry[1];\n"
+            "diff carry[1],%s[2],%s[2];\n"
+            "reset carry[1];\n"
+            "cx %s[0], carry[1];\n"
+            "diff carry[1],%s[1],%s[1];\n"
+            "diff carry[0],%s[0],%s[0];\n"
+            "reset carry[1];\n"
+            "reset carry[0];\n\n",
+            qreg_list[r1],
+            qreg_list[r2],qreg_list[r1],
+            qreg_list[r1],
+            qreg_list[r2],qreg_list[r1],
+            qreg_list[r1],
+            qreg_list[r2],qreg_list[r1],
+            qreg_list[r2],qreg_list[r1]
+    );
+
 }
 
 int measure_result(int reg){
