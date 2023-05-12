@@ -8,10 +8,10 @@ struct ASTNode * r_create_tree(struct ASTNode *n, struct ASTNode * left, struct 
 struct ASTNode * pratt_create_tree(int ptp, struct ASTNode *left);
 int interpretAST(struct ASTNode * node);
 
-int q_add(int r1, int r2);
-int q_subtract(int r1, int r2);
+struct RegOp q_add(int r1, int r2);
+struct RegOp q_subtract(int r1, int r2);
 int measure_result(int reg);
-int load_qregister(int val);
+struct RegOp load_qregister(int val);
 void q_load_preamble();
 
 void genereate_code(struct ASTNode * node);

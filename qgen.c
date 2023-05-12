@@ -11,6 +11,8 @@ int num_creg = 2;
 int num_qreg = 2;
 int bit_size = 4;
 
+
+
 static void free_q_registers(){
     for(int i =0; i < num_qreg; i ++){
         free_qreg[0] = 0;
@@ -75,18 +77,18 @@ static int num_bits(int num){
     return count;
 }
 static void create_adder_gates(){
-    fputs("gate majority a,b,c{ \n" 
-          "\tcx c,b;\n" 
-          "\tcx c,a;\n"
-          "\tccx a,b,c;\n" 
+    fputs("gate majority c,b,a{ \n" 
+          "\tcx a,b;\n" 
+          "\tcx a,c;\n"
+          "\tccx c,b,a;\n" 
           "}\n",
           Outfile
     );
 
-    fputs("gate unmaj a,b,c{ \n" 
-          "\tccx a,b,c;\n" 
-          "\tcx c,a;\n"
-          "\tcx a,b;\n" 
+    fputs("gate unmaj c,b,a{ \n" 
+          "\tccx c,b,a;\n" 
+          "\tcx a,c;\n"
+          "\tcx c,b;\n" 
           "}\n",
           Outfile
     );
@@ -168,10 +170,10 @@ static void create_cregister(int val){
 
 static void reset_qreg(int reg){
     fprintf(Outfile, "reset %s; \n", qreg_list[reg]);
-    free_qreg[reg];
+    free_qreg[reg] = 2;
 }
 
-int load_qregister(int val){
+struct RegOp load_qregister(int val){
 
     int qreg_num = allocate_qreg();
     printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
@@ -183,24 +185,54 @@ int load_qregister(int val){
         }
     }
     printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
-    return qreg_num;
+    struct RegOp retval = {qreg_num, NO_OP};
+    return retval;
 }
 //Classical addition using bits
-int q_add(int r1, int r2){
+struct RegOp q_add(int r1, int r2){
      printf("Adding gates %s %s\n", qreg_list[r1], qreg_list[r2]);
 
     fprintf(Outfile, "add4 %s[0], %s[1], %s[2], %s[3], %s[0], %s[1], %s[2], %s[3], carry[0], carry[1];\n",
         qreg_list[r1], qreg_list[r1], qreg_list[r1], qreg_list[r1],
         qreg_list[r2], qreg_list[r2], qreg_list[r2], qreg_list[r2]);
     
+    fprintf(Outfile,
+            "measure carry[0] -> ans[4];\n"
+            "reset carry[1];\n"
+            "reset carry[0];\n"
+    );
     reset_qreg(r1);
-    return r2;
+    struct RegOp retval = {r2, ADD_REG};
+    return retval;
 }
-int q_subtract(int r1, int r2){
+struct RegOp q_subtract(int r1, int r2){
     printf("Adding gates %s %s\n", qreg_list[r1], qreg_list[r2]);
-    fprintf(Outfile, "sub4 %s[0], %s[1], %s[2], %s[3], %s[0], %s[1], %s[2], %s[3], carry[0], carry[1];\n \n",
-        qreg_list[r1], qreg_list[r1], qreg_list[r1], qreg_list[r1],
-        qreg_list[r2], qreg_list[r2], qreg_list[r2], qreg_list[r2]);
+
+
+    //fprintf(Outfile, "sub4 %s[0], %s[1], %s[2], %s[3], %s[0], %s[1], %s[2], %s[3], carry[0], carry[1];\n \n",
+    //    qreg_list[r1], qreg_list[r1], qreg_list[r1], qreg_list[r1],
+    //    qreg_list[r2], qreg_list[r2], qreg_list[r2], qreg_list[r2]);
+    
+    fprintf(Outfile,
+           "subout carry[0], %s[0], %s[0];\n"
+           "reset carry[0];\n"
+           "cx %s[0], carry[0];\n\n"
+           "subout carry[0], %s[1], %s[1];\n"
+           "reset carry[0];\n"
+           "cx %s[1], carry[0];\n\n"
+           "subout carry[0], %s[2], %s[2];\n"
+           "reset carry[0];\n"
+           "cx %s[2], carry[0];\n\n"
+           "subout carry[0], %s[3], %s[3];\n"
+           "reset carry[0];\n\n",
+           qreg_list[r2],qreg_list[r1],
+           qreg_list[r1],
+           qreg_list[r2],qreg_list[r1],
+           qreg_list[r1],
+           qreg_list[r2],qreg_list[r1],
+           qreg_list[r1],        
+           qreg_list[r2],qreg_list[r1]
+    );
 
     fprintf(Outfile,
             "cx %s[2],carry[1];\n"
@@ -223,6 +255,10 @@ int q_subtract(int r1, int r2){
             qreg_list[r2],qreg_list[r1]
     );
 
+    reset_qreg(r2);
+    struct RegOp retval = {r1, SUBTRACT_REG};
+    return retval;
+
 }
 
 int measure_result(int reg){
@@ -231,7 +267,6 @@ int measure_result(int reg){
     fprintf(Outfile, "measure %s[1] -> ans[1];\n", qreg_list[reg]);
     fprintf(Outfile, "measure %s[2] -> ans[2];\n", qreg_list[reg]);
     fprintf(Outfile, "measure %s[3] -> ans[3];\n", qreg_list[reg]);
-    fprintf(Outfile, "measure carry[1] -> ans[4];\n", qreg_list[reg]);
 }
 
 

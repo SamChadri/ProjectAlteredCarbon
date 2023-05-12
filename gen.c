@@ -39,15 +39,18 @@ int interpretAST(struct ASTNode * node){
 }
 
 
-static int generate_AST(struct ASTNode *node)
+static struct RegOp generate_AST(struct ASTNode *node)
 {
     printf("Running generate_ast\n");
-    int left_reg, right_reg; 
+    int left_reg, right_reg;
+    struct RegOp retval; 
     if(node->left != NULL){
-        left_reg = generate_AST(node->left);
+        retval = generate_AST(node->left);
+        left_reg = retval.reg;
     }
     if(node->right != NULL){
-        right_reg = generate_AST(node->right);
+        retval = generate_AST(node->right);
+        right_reg = retval.reg;
     }
 
 
@@ -71,8 +74,9 @@ static int generate_AST(struct ASTNode *node)
 void genereate_code(struct ASTNode * node)
 {
     q_load_preamble();
-    int reg = generate_AST(node);
-    int result = measure_result(reg);
+    struct RegOp retval = generate_AST(node);
+    
+    int result = measure_result(retval.reg);
 
     
 }

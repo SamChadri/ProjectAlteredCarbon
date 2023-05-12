@@ -117,7 +117,25 @@ x q2[2];
 
 
 
-sub4 q1[0], q1[1], q1[2], q1[3], q2[0], q2[1], q2[2], q2[3], carry[0], carry[1];
+//sub4 q1[0], q1[1], q1[2], q1[3], q2[0], q2[1], q2[2], q2[3], carry[0], carry[1];
+
+subout carry[0],q2[0],q1[0];
+reset carry[0];
+cx q1[0], carry[0];
+
+subout carry[0],q2[1],q1[1];
+reset carry[0];
+cx q1[1], carry[0];
+
+subout carry[0],q2[2],q1[2];
+reset carry[0];
+cx q1[2], carry[0];
+
+subout carry[0],q2[3],q1[3];
+reset carry[0];
+
+
+
 
 cx q1[2],carry[1];
 diff carry[1],q2[3],q1[3];

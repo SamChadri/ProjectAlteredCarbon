@@ -15,6 +15,17 @@ enum {
     A_ADD, A_SUBTRACT, A_MULTIPLY, A_DIVIDE, A_INTLIT
 };
 
+enum{
+    NO_OP,
+    ADD_REG,
+    SUBTRACT_REG,
+};
+
+struct RegOp{
+    int reg;
+    int operation;
+};
+
 struct ASTNode{
     int op; 
     struct ASTNode *left;
