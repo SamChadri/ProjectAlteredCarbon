@@ -10,8 +10,9 @@ int interpretAST(struct ASTNode * node);
 
 struct RegOp q_add(int r1, int r2);
 struct RegOp q_subtract(int r1, int r2);
+struct RegOp q_multiply(int r1, int r2);
 int measure_result(int reg);
-struct RegOp load_qregister(int val);
+struct RegOp load_qregister(int val, int position);
 void q_load_preamble();
 
 void genereate_code(struct ASTNode * node);

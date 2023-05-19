@@ -24,12 +24,13 @@ static char *ASTop[] = { "+", "-", "*", "/" };
 static int OpPrec[] = { 0, 0, 10, 10};
 
 static int op_precedence(int tokentype) {
-  int prec = OpPrec[tokentype];
-  if (prec != 0 && prec != 10) {
-    fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
-    exit(1);
-  }
-  return (prec);
+
+    int prec = OpPrec[tokentype];
+    if (prec != 0 && prec != 10) {
+        fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
+        exit(1);
+    }
+    return (prec);
 }
 
 struct ASTNode * scan_leaf(){
@@ -71,8 +72,10 @@ struct ASTNode * pratt_create_tree(int ptp, struct ASTNode *left)
     if(op_precedence(op_token) > ptp){
         printf("Previous token: '%s'. '%s' Takes precedence \n",ASTop[ptp],ASTop[op_token]);
         n->left = left->right;
+        n->left->position = LEFT_REG;
         left->right = n;
         n->right = scan_leaf();
+        n->right->position = RIGHT_REG;
         root = pratt_create_tree(ptp, left);
         if(root == NULL){
             return left;
@@ -84,7 +87,9 @@ struct ASTNode * pratt_create_tree(int ptp, struct ASTNode *left)
         printf("No Precedence found \n",ASTop[op_token], ASTop[ptp]);
 
         n->left = left;
+        n->left->position = LEFT_REG;
         n->right = scan_leaf();
+        n->right->position = RIGHT_REG;
 
         root = pratt_create_tree(op_token, n);
         return root;

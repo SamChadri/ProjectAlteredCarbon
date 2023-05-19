@@ -4,8 +4,17 @@
 
 
 static char * creg_list [] = {"r1","r2","r3"};
-static char * qreg_list [] = {"q1","q2"};
-int free_qreg[2] = {0,0};
+static char * qreg_list [] = {"q1","q2", "psum1", "psum2"};
+enum {
+    Q1,
+    Q2,
+    PSUM1,
+    PSUM2
+};
+
+
+int pos_reg[2] = {0,0};
+int free_qreg[2] = {FREE_REG,FREE_REG};
 int free_creg[2] = {0,0};
 int num_creg = 2;
 int num_qreg = 2;
@@ -36,21 +45,31 @@ static int allocate_creg(){
     fprintf(stderr, "Out of c_registers!\n");
     exit(1);
 }
-
-static int allocate_qreg(){
+//PRECEDENCE ALLOCATION DUE TO QUBIT RESTRICTIONS
+static int allocate_qreg(int position){
     printf("Allocating register...\n");
     for(int i = 0; i < num_qreg; i++){
-        if(free_qreg[i] == 2){
+        if(pos_reg[position] == 1 && free_qreg[i] == ALLOCATED_REG)
+        {
+            //CREATE POSITION ENUM LATER MAYBE
+            printf("Found position register that has already been allocated\n");
+            free_qreg[i] = ALLOCATED_REG;
+            printf("New register allocation takes precedence %s\n", qreg_list[i]);
+            return i;
+
+        }
+        if(free_qreg[i] == FREE_ALLOC_REG){
             printf("FOUND 2...\n");
             free_qreg[i] = 1;
+            pos_reg[position] = 1;
             printf("Found already created register %s\n", qreg_list[i]);
 
             return i;
         }
-        if(free_qreg[i] == 0){
+        if(free_qreg[i] == FREE_REG){
             printf("FOUND 0...at %d\n", i);
-            free_qreg[i] = 1;
-            printf("WHOOHS\n");
+            free_qreg[i] = ALLOCATED_REG;
+            pos_reg[position] = 1;
             printf("creating new register %s\n", qreg_list[0]);
             fprintf(Outfile, "qreg %s[%d];\n", qreg_list[i], bit_size);
 
@@ -140,8 +159,35 @@ static void create_adder_gates(){
           Outfile
     );
 
+    fputs("gate add5 a0,a1,a2,a3,a4,b0,b1,b2,b3,b4,cin,cout { \n"
+	      "\tmajority cin,b0,a0;\n"
+	      "\tmajority a0,b1,a1;\n"
+	      "\tmajority a1,b2,a2;\n"
+	      "\tmajority a2,b3,a3;\n"
+          "\tmajority a3,b4,a4;\n"
+	      "\tcx a4,cout;\n"
+          "\tunmaj a3,b4,a4;\n"
+	      "\tunmaj a2,b3,a3;\n"
+	      "\tunmaj a1,b2,a2;\n"
+	      "\tunmaj a0,b1,a1;\n"
+	      "\tunmaj cin,b0,a0;\n"
+          "}\n"
+        ,Outfile
+    );
+
+    fputs("gate mult31 a1,a2,a3,b1,c1,c2,c3{ \n"
+          "ccx a1,b1,c1;\n"
+          "ccx a2,b1,c2;\n"
+          "ccx a3,b1,c3;\n"
+          "}\n",
+          Outfile
+    );
+
     fputs("qreg carry[2];\n", Outfile);
-    fputs("creg ans[5];\n", Outfile);
+    fputs("creg ans[6];\n", Outfile);
+    fputs("qreg psum1[5];\n"
+          "qreg psum2[5];\n"
+          ,Outfile);
 }
 
 void q_load_preamble(){
@@ -170,12 +216,12 @@ static void create_cregister(int val){
 
 static void reset_qreg(int reg){
     fprintf(Outfile, "reset %s; \n", qreg_list[reg]);
-    free_qreg[reg] = 2;
+    free_qreg[reg] = FREE_ALLOC_REG;
 }
 
-struct RegOp load_qregister(int val){
+struct RegOp load_qregister(int val, int position){
 
-    int qreg_num = allocate_qreg();
+    int qreg_num = allocate_qreg(position);
     printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
     for(int i = 0; val > 0; i++){
         int bit_val = val % 2;
@@ -188,9 +234,9 @@ struct RegOp load_qregister(int val){
     struct RegOp retval = {qreg_num, NO_OP};
     return retval;
 }
-//Classical addition using bits
+//TODO: FIGURE OUT HOW TO CHAIN CARRY BITS
 struct RegOp q_add(int r1, int r2){
-     printf("Adding gates %s %s\n", qreg_list[r1], qreg_list[r2]);
+    printf("Adding gates %s %s\n", qreg_list[r1], qreg_list[r2]);
 
     fprintf(Outfile, "add4 %s[0], %s[1], %s[2], %s[3], %s[0], %s[1], %s[2], %s[3], carry[0], carry[1];\n",
         qreg_list[r1], qreg_list[r1], qreg_list[r1], qreg_list[r1],
@@ -214,6 +260,7 @@ struct RegOp q_subtract(int r1, int r2){
     //    qreg_list[r2], qreg_list[r2], qreg_list[r2], qreg_list[r2]);
     
     fprintf(Outfile,
+           "\t//-----------SUBTRACTION ROUTINE START--------------\n"
            "subout carry[0], %s[0], %s[0];\n"
            "reset carry[0];\n"
            "cx %s[0], carry[0];\n\n"
@@ -245,7 +292,8 @@ struct RegOp q_subtract(int r1, int r2){
             "diff carry[1],%s[1],%s[1];\n"
             "diff carry[0],%s[0],%s[0];\n"
             "reset carry[1];\n"
-            "reset carry[0];\n\n",
+            "reset carry[0];\n"
+            "\t//-----------SUBTRACTION ROUTINE END--------------\n\n",
             qreg_list[r1],
             qreg_list[r2],qreg_list[r1],
             qreg_list[r1],
@@ -261,12 +309,39 @@ struct RegOp q_subtract(int r1, int r2){
 
 }
 
+struct RegOp q_multiply(int r1, int r2){
+    fprintf(Outfile,
+           "\t//-----------MULTIPLICATION ROUTINE START--------------\n"
+           "mult31 %s[0],%s[1],%s[2],%s[0],psum1[0],psum1[1],psum1[2];\n"
+           "mult31 %s[0],%s[1],%s[2],%s[1],psum2[1],psum2[2],psum2[3];\n"
+           "add5 psum1[0],psum1[1],psum1[2],psum1[3],psum1[4],psum2[0],psum2[1],psum2[2],psum2[3],psum2[4],carry[0],carry[1];\n"
+           "reset psum1;\n"
+           "reset carry[0];\n"
+           "reset carry[1];\n"
+           "mult31 %s[0],%s[1],%s[2],%s[2],psum1[2],psum1[3],psum1[4];\n"
+           "add5 psum1[0],psum1[1],psum1[2],psum1[3],psum1[4],psum2[0],psum2[1],psum2[2],psum2[3],psum2[4],carry[0],carry[1];\n"
+           "reset psum1;\n"
+           "reset carry[0];\n"
+            "\t//-----------MULTIPLICATION ROUTINE END--------------\n\n",
+           qreg_list[r1],qreg_list[r1],qreg_list[r1],qreg_list[r2],
+           qreg_list[r1],qreg_list[r1],qreg_list[r1],qreg_list[r2],
+           qreg_list[r1],qreg_list[r1],qreg_list[r1],qreg_list[r2]
+    );
+    struct RegOp retval = {PSUM2, SUBTRACT_REG};
+    return retval;
+}
+
 int measure_result(int reg){
 
     fprintf(Outfile, "measure %s[0] -> ans[0];\n", qreg_list[reg]);
     fprintf(Outfile, "measure %s[1] -> ans[1];\n", qreg_list[reg]);
     fprintf(Outfile, "measure %s[2] -> ans[2];\n", qreg_list[reg]);
     fprintf(Outfile, "measure %s[3] -> ans[3];\n", qreg_list[reg]);
+
+    if(reg == PSUM2 || reg == PSUM1){
+        fprintf(Outfile, "measure %s[4] -> ans[4];\n",qreg_list[reg]);
+        fprintf(Outfile, "measure carry[1] -> ans[5];\n");
+    }
 }
 
 

@@ -55,15 +55,16 @@ static struct RegOp generate_AST(struct ASTNode *node)
 
 
 
-
     switch(node->op){
         case A_ADD:
             return q_add(left_reg, right_reg);
         case A_SUBTRACT:
             return q_subtract(left_reg, right_reg);
+        case A_MULTIPLY:
+            return q_multiply(left_reg, right_reg);
         case A_INTLIT:
             printf("Running load register\n");
-            return load_qregister(node->value);
+            return load_qregister(node->value, node->position);
         default:
             fprintf(stderr, "Do not recognize this symbol");
             exit(1);

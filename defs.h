@@ -19,6 +19,16 @@ enum{
     NO_OP,
     ADD_REG,
     SUBTRACT_REG,
+    MULTI_REG,
+};
+
+enum {
+
+    LEFT_REG,
+    RIGHT_REG,
+    FREE_REG,
+    FREE_ALLOC_REG,
+    ALLOCATED_REG
 };
 
 struct RegOp{
@@ -31,4 +41,5 @@ struct ASTNode{
     struct ASTNode *left;
     struct ASTNode *right;
     int value;
+    int position;
 };
