@@ -38,6 +38,37 @@ int interpretAST(struct ASTNode * node){
     }
 }
 
+static int agenerate_AST(struct ASTNode *node)
+{
+   int left_register, right_register; 
+    if(node->left != NULL){
+        left_register = agenerate_AST(node->left);
+    }
+    if(node->right != NULL){
+        right_register = agenerate_AST(node->right);
+    }
+
+      // Debug: Print what we are about to do
+
+
+
+    switch(node->op){
+        case A_ADD:
+            return asadd(left_register, right_register);
+        case A_SUBTRACT:
+            return assub(left_register, right_register);
+        case A_MULTIPLY:
+            return asmultiply(left_register, right_register);
+        case A_DIVIDE:
+            return asdivide(left_register, right_register);
+        case A_INTLIT:
+            return asload(node->value);
+        default:
+            fprintf(stderr, "Do not recognize this symbol");
+            exit(1);
+    }   
+}
+
 
 static struct RegOp generate_AST(struct ASTNode *node)
 {
@@ -72,7 +103,7 @@ static struct RegOp generate_AST(struct ASTNode *node)
 }
 
 
-void genereate_code(struct ASTNode * node)
+void generate_qasm(struct ASTNode * node)
 {
     q_load_preamble();
     struct RegOp retval = generate_AST(node);
@@ -80,5 +111,14 @@ void genereate_code(struct ASTNode * node)
     int result = measure_result(retval.reg);
 
     
+}
+
+
+void generate_asm(struct ASTNode * node)
+{
+    aspreamble();
+    int reg = agenerate_AST(node);
+   asprint(reg);
+    aspostamble();
 }
 

@@ -1,7 +1,12 @@
 comp: expr.c main.c scan.c tree.c qgen.c gen.c
-	cc -o comp -g expr.c gen.c qgen.c main.c scan.c tree.c
+	cc -o comp -g expr.c gen.c qgen.c main.c scan.c tree.c agen.c
 
 clean:
-	rm -f comp *.o:
-	rm out.asm
+	rm -f comp *.o out.asm out *.s
 	rm -rf *.dSYM
+
+
+test: comp
+	./comp input01
+	cc -o out out.s
+	./out

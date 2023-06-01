@@ -15,5 +15,18 @@ int measure_result(int reg);
 struct RegOp load_qregister(int val, int position);
 void q_load_preamble();
 
-void genereate_code(struct ASTNode * node);
+void aspreamble();
+void aspostamble();
+void free_all_registers();
+int asload(int val);
+int asadd(int r1, int r2);
+int assub(int r1, int r2);
+int asmultiply(int r1, int r2);
+int asdivide(int r1, int r2);
+int asprint(int register);
+
+void generate_qasm(struct ASTNode * node);
+void generate_asm(struct ASTNode * node);
+
+
 

@@ -6,14 +6,20 @@
 #undef extern_
 
 
-void init(char * file){
+void init(char * file, int type){
     Line = 0;
     Putback= '\n';
+    char * outfile_name;
+    if(type == 1){
+        outfile_name = "out.s";
+    }else{
+        outfile_name = "out.asm";
+    }
     if((Infile = fopen(file, "r")) == NULL){
         fprintf(stderr,"Unable to open %s: %s\n", file, strerror(errno));
         exit(1);
     }
-      if ((Outfile = fopen("out.asm", "w")) == NULL) {
+    if((Outfile = fopen(outfile_name, "w")) == NULL) {
         fprintf(stderr, "Unable to create out.asm: %s\n", strerror(errno));
         exit(1);
     }
@@ -41,7 +47,7 @@ void main(int argc, char *argv[]){
         exit(1);
     }
 
-    init(argv[1]);
+    init(argv[1], 1);
 
     struct ASTNode *root;
     printf("Starting main\n");
@@ -51,7 +57,7 @@ void main(int argc, char *argv[]){
     printf("Done doing things\n");
     printf("%d\n", result);
     printf("Done interpreting...\n");
-    genereate_code(root);
+    generate_asm(root);
 
     fclose(Outfile);
 
