@@ -7,7 +7,7 @@
 
 
 enum {
-    T_PLUS, T_MINUS, T_STAR, T_SLASH, T_INTLIT, T_EOF
+    T_PLUS, T_MINUS, T_STAR, T_SLASH, T_INTLIT, T_EOF, T_SEMI, T_PRINT, T_MEASURE
 };
 
 
@@ -42,4 +42,12 @@ struct ASTNode{
     struct ASTNode *right;
     int value;
     int position;
+};
+
+struct NESTNode{
+    struct ASTNode *nest;
+    struct NESTNode *next;
+    int priority;
+    int token;
+
 };

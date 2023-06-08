@@ -38,14 +38,14 @@ int interpretAST(struct ASTNode * node){
     }
 }
 
-static int agenerate_AST(struct ASTNode *node)
+static int interpret_AST(struct ASTNode *node)
 {
    int left_register, right_register; 
     if(node->left != NULL){
-        left_register = agenerate_AST(node->left);
+        left_register = interpret_AST(node->left);
     }
     if(node->right != NULL){
-        right_register = agenerate_AST(node->right);
+        right_register = interpret_AST(node->right);
     }
 
       // Debug: Print what we are about to do
@@ -70,17 +70,17 @@ static int agenerate_AST(struct ASTNode *node)
 }
 
 
-static struct RegOp generate_AST(struct ASTNode *node)
+static struct RegOp q_interpret_AST(struct ASTNode *node)
 {
     printf("Running generate_ast\n");
     int left_reg, right_reg;
     struct RegOp retval; 
     if(node->left != NULL){
-        retval = generate_AST(node->left);
+        retval = q_interpret_AST(node->left);
         left_reg = retval.reg;
     }
     if(node->right != NULL){
-        retval = generate_AST(node->right);
+        retval = q_interpret_AST(node->right);
         right_reg = retval.reg;
     }
 
@@ -106,7 +106,7 @@ static struct RegOp generate_AST(struct ASTNode *node)
 void generate_qasm(struct ASTNode * node)
 {
     q_load_preamble();
-    struct RegOp retval = generate_AST(node);
+    struct RegOp retval = q_interpret_AST(node);
     
     int result = measure_result(retval.reg);
 
@@ -117,8 +117,21 @@ void generate_qasm(struct ASTNode * node)
 void generate_asm(struct ASTNode * node)
 {
     aspreamble();
-    int reg = agenerate_AST(node);
-   asprint(reg);
+    int reg = interpret_AST(node);
+    asprint(reg);
     aspostamble();
 }
+
+
+int interpret_asm_AST(struct ASTNode * node )
+{
+    return interpret_AST(node);
+}
+
+int interpret_qasm_AST(struct ASTNode * node){
+    struct RegOp retval = q_interpret_AST(node);
+    return retval.reg;
+}
+
+
 

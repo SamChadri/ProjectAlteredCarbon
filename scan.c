@@ -56,10 +56,50 @@ static int scanint(int c){
     return val;
 }
 
+static int scan_ident(int c, char *buf, int lim)
+{
+    int i = 0;
+    while(isalpha(c) || isdigit(c) || '_' == c)
+    {
+        if(i < lim - 1){
+            buf[i++] = c;
+            c = next();
+        }else{
+            printf("identifier too long on line %d\n", Line);
+            exit(1);
+        }
+
+    }
+    putback(c);
+    buf[i] = '\0';
+    return i;
+}
+
+
+static int keyword(char * s)
+{
+    switch (*s)
+    {
+    case ('p'):
+        printf("KEYWORD %s\n", s);
+        printf("strcmp result: %d\n", strcmp(s, "print"));
+        if(!strcmp(s, "print"))
+            return T_PRINT;
+        break;
+    case ('m'):
+        if(!strcmp(s, "measure"))
+            return T_MEASURE;
+        break;
+    }
+    return 0;
+
+}
+
 
 int scan(struct Token *t)
 {
-    int c;
+    int c, tokentype;
+
     c = skip();
 
     switch(c)
@@ -79,15 +119,30 @@ int scan(struct Token *t)
         case '/':
             t->token = T_SLASH;
             break;
+        case ';':
+            t->token = T_SEMI;
+            break;
         default:
             if(isdigit(c)){
                 t->int_value = scanint(c);
                 t->token = T_INTLIT;
                 break;
+            }else if(isalpha(c) || '_' == c){
+                int ident_len = scan_ident(c,Text, 50);
+                tokentype = keyword(Text);
+                printf("KEYWORD RESULT:  %d\n", tokentype);
+                if(tokentype == 7){
+                    printf("TOKENTYPE RECOGNIZED\n");
+                    t->token = tokentype;
+                }else{
+                    // Not a recognised keyword, so an error for now
+                    printf("Unrecognised symbol %s on line %d\n", Text, Line);
+                    exit(1);
+                }
+                    
+
             }
 
-            printf("Unrecognised character %c on line %d\n", c, Line);
-            exit(1);
     }
 
     return 1;

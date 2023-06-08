@@ -19,13 +19,10 @@ printint:
 _main:
 	pushq	%rbp
 	movq	%rsp, %rbp
-	movq	$6, %r8
+	movq	$3, %r8
 	movq	$2, %r9
-	movq	%r8, %rax
-	cqo
-	idivq	%r9
-	movq	%rax, %r8
-	movq	%r8, %rdi
+	addq	%r8, %r9
+	movq	%r9, %rdi
 	call	printint
 	movl	$0, %eax
 	popq	%rbp

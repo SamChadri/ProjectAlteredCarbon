@@ -38,6 +38,23 @@ static void scanfile(){
     }
 }
 
+static void compile_asm()
+{
+    aspreamble();
+    struct NESTNode * head = build_astat_nest();
+    interpret_astat_nest(head);
+    aspostamble();
+
+}
+
+static void compile_qasm()
+{
+    q_load_preamble();
+    struct NESTNode * head = build_qstat_nest();
+    interpret_astat_nest(head);
+    
+}
+
 
 
 
@@ -52,12 +69,17 @@ void main(int argc, char *argv[]){
     struct ASTNode *root;
     printf("Starting main\n");
     //root = r_create_tree(NULL, NULL,NULL,NULL);
+
+    /*
+    LESSON 4 ASSEMBLY
     root = pratt_create_tree(100, NULL);
     int result = interpretAST(root);
     printf("Done doing things\n");
     printf("%d\n", result);
     printf("Done interpreting...\n");
     generate_asm(root);
+    */
+    compile_asm();
 
     fclose(Outfile);
 

@@ -61,8 +61,8 @@ struct ASTNode * pratt_create_tree(int ptp, struct ASTNode *left)
     }
     scan(&token);
 
-    if(token.token == T_EOF){
-        printf("END OF FILE RETURNING \n");
+    if(token.token == T_SEMI){
+        printf("FOUND SEMICOLON... EXITING PRATT CREATE TREE \n");
         return left;
     }
     int op_token = token_op(token.token);

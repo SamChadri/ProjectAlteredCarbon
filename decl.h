@@ -18,6 +18,7 @@ void q_load_preamble();
 void aspreamble();
 void aspostamble();
 void free_all_registers();
+
 int asload(int val);
 int asadd(int r1, int r2);
 int assub(int r1, int r2);
@@ -27,6 +28,19 @@ int asprint(int register);
 
 void generate_qasm(struct ASTNode * node);
 void generate_asm(struct ASTNode * node);
+
+int interpret_asm_AST(struct ASTNode * node );
+int interpret_qasm_AST(struct ASTNode * node);
+
+struct NESTNode * make_nest_node(struct ASTNode * root, struct NESTNode * next, int token,int priority);
+struct NESTNode * insert_nest_node(struct NESTNode * node, struct NESTNode * head);
+
+struct NESTNode * build_astat_nest();
+struct NESTNode * build_qstat_nest();
+void interpret_astat_nest(struct NESTNode * head);
+void interpret_qstat_nest(struct NESTNode * head);
+
+
 
 
 
