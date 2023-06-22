@@ -31,7 +31,7 @@ int interpretAST(struct ASTNode * node){
         case A_DIVIDE:
             return (lresult / rresult);
         case A_INTLIT:
-            return (node->value);
+            return (node->value.int_value);
         default:
             fprintf(stderr, "Do not recognize this symbol");
             exit(1);
@@ -62,7 +62,9 @@ static int interpret_AST(struct ASTNode *node)
         case A_DIVIDE:
             return asdivide(left_register, right_register);
         case A_INTLIT:
-            return asload(node->value);
+            return asloadint(node->value.int_value);
+        case A_IDENT:
+            return asloadsymbol(node->value.id);
         default:
             fprintf(stderr, "Do not recognize this symbol");
             exit(1);
@@ -95,7 +97,7 @@ static struct RegOp q_interpret_AST(struct ASTNode *node)
             return q_multiply(left_reg, right_reg);
         case A_INTLIT:
             printf("Running load register\n");
-            return load_qregister(node->value, node->position);
+            return load_qregister(node->value.int_value, node->position);
         default:
             fprintf(stderr, "Do not recognize this symbol");
             exit(1);

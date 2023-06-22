@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #define TEXTLEN         512
+#define NSYMBOLS        1024
 
 struct Token{
     int token;
@@ -16,3 +17,8 @@ extern_ FILE *Infile;
 extern_ FILE *Outfile;
 extern_ struct Token token;
 extern_ char Text[TEXTLEN + 1];
+
+extern struct SYMNode * SymHead;
+
+extern_ struct symtable Gsym[NSYMBOLS];
+

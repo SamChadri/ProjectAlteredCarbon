@@ -51,20 +51,44 @@ static void compile_qasm()
 {
     q_load_preamble();
     struct NESTNode * head = build_qstat_nest();
-    interpret_astat_nest(head);
+    interpret_qstat_nest(head);
     
+}
+
+static void compile(int qasm_flag)
+{
+    if(qasm_flag == 1)
+    {
+        printf("Compiling for x86 Assembly....\n");
+        compile_asm();
+    }
+    else
+    {
+        printf("Compiling for QASM...\n");
+        compile_qasm();
+    }
 }
 
 
 
 
 void main(int argc, char *argv[]){
-    if(argc != 2){
+    int q_comp = 1;
+    if(argc < 2){
         fprintf(stderr, "Usage: %s infile\n", argv[0]);
         exit(1);
     }
 
-    init(argv[1], 1);
+    else if(argc == 3)
+    {
+        if(!strcmp("-q", argv[2]))
+        {
+            q_comp = 0;
+        }
+        
+    }
+
+    init(argv[1], q_comp);
 
     struct ASTNode *root;
     printf("Starting main\n");
@@ -79,7 +103,7 @@ void main(int argc, char *argv[]){
     printf("Done interpreting...\n");
     generate_asm(root);
     */
-    compile_asm();
+    compile(q_comp);
 
     fclose(Outfile);
 

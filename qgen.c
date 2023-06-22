@@ -70,7 +70,7 @@ static int allocate_qreg(int position){
             printf("FOUND 0...at %d\n", i);
             free_qreg[i] = ALLOCATED_REG;
             pos_reg[position] = 1;
-            printf("creating new register %s\n", qreg_list[0]);
+            printf("creating new register %s\n", qreg_list[i]);
             fprintf(Outfile, "qreg %s[%d];\n", qreg_list[i], bit_size);
 
             return i;
@@ -230,7 +230,7 @@ struct RegOp load_qregister(int val, int position){
             fprintf(Outfile, "x %s[%d];\n",qreg_list[qreg_num],i );
         }
     }
-    printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
+    //printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
     struct RegOp retval = {qreg_num, NO_OP};
     return retval;
 }

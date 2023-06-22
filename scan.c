@@ -90,6 +90,10 @@ static int keyword(char * s)
         if(!strcmp(s, "measure"))
             return T_MEASURE;
         break;
+    case ('i'):
+        if(!strcmp(s, "int"))
+            return T_INT;
+        break;
     }
     return 0;
 
@@ -122,6 +126,9 @@ int scan(struct Token *t)
         case ';':
             t->token = T_SEMI;
             break;
+        case '=':
+            t->token = T_EQUALS;
+            break;
         default:
             if(isdigit(c)){
                 t->int_value = scanint(c);
@@ -130,17 +137,20 @@ int scan(struct Token *t)
             }else if(isalpha(c) || '_' == c){
                 int ident_len = scan_ident(c,Text, 50);
                 tokentype = keyword(Text);
-                printf("KEYWORD RESULT:  %d\n", tokentype);
-                if(tokentype == 7){
+                printf("scan::scan()::KEYWORD RESULT:  %s\n", Text);
+                if(tokentype){
                     printf("TOKENTYPE RECOGNIZED\n");
                     t->token = tokentype;
-                }else{
-                    // Not a recognised keyword, so an error for now
-                    printf("Unrecognised symbol %s on line %d\n", Text, Line);
-                    exit(1);
+                    break;
                 }
+                t->token = T_IDENT;
+                break;
                     
 
+            }else{
+                    // Not a recognised keyword, so an error for now
+                    printf("scan::scan()::Unrecognised symbol %s on line %d\n", Text, Line);
+                    exit(1);
             }
 
     }

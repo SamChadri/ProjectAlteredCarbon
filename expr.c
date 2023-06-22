@@ -20,7 +20,7 @@ int token_op(int tok){
             exit(1);
     }
 }
-static char *ASTop[] = { "+", "-", "*", "/" };
+static char *ASTop[] = { "+", "-", "*", "/"};
 static int OpPrec[] = { 0, 0, 10, 10};
 
 static int op_precedence(int tokentype) {
@@ -38,9 +38,14 @@ struct ASTNode * scan_leaf(){
     scan(&token);
     switch (token.token) {
         case T_INTLIT:
-            printf("Making Leaf node %d \n", token.int_value);
+            printf("expr::scan_leaf::Making Leaf node for integer %d \n", token.int_value);
             n = make_leaf_node(A_INTLIT, token.int_value);
             return (n);
+        case T_IDENT:
+            printf("expr::scan_leaf::Making Leaf node for identifier %d \n", token.int_value);
+            if(find_symbol(Text) == NULL)
+                fatals("Unknown variable", Text);
+            n = cmake_leaf_node(A_IDENT, Text);
         default:
             fprintf(stderr, "syntax error on line %d, token %s\n", Line, ASTop[token.token]);
             exit(1);

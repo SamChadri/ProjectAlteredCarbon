@@ -80,7 +80,7 @@ int asprint(int reg){
     fprintf(Outfile, "\tcall\tprintint\n");
 }
 
-int asload(int val){
+int asloadint(int val){
 
     int r = allocate_register();
 
@@ -88,6 +88,26 @@ int asload(int val){
 
     return r;
 
+}
+
+int asloadsymbol(char *symbol) {
+  // Get a new register
+  int r = alloc_register();
+
+  // Print out the code to initialise it
+  fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", symbol, reglist[r]);
+  return (r);
+}
+
+
+int asstoresymbol(int r, char *symbol) {
+  fprintf(Outfile, "\tmovq\t%s, %s(\%%rip)\n", reglist[r], symbol);
+  return (r);
+}
+
+void ascreatesymbol(char * symbol)
+{
+    fprintf(Outfile, "\t.comm\t%s,8,8\n", symbol);
 }
 
 

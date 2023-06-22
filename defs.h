@@ -7,12 +7,12 @@
 
 
 enum {
-    T_PLUS, T_MINUS, T_STAR, T_SLASH, T_INTLIT, T_EOF, T_SEMI, T_PRINT, T_MEASURE
+    T_PLUS, T_MINUS, T_STAR, T_SLASH, T_INTLIT, T_EOF, T_SEMI, T_PRINT, T_MEASURE, T_INT, T_EQUALS, T_IDENT
 };
 
 
 enum {
-    A_ADD, A_SUBTRACT, A_MULTIPLY, A_DIVIDE, A_INTLIT
+    A_ADD, A_SUBTRACT, A_MULTIPLY, A_DIVIDE, A_INTLIT,A_IDENT, A_LVIDENT, A_ASSIGN
 };
 
 enum{
@@ -40,6 +40,10 @@ struct ASTNode{
     int op; 
     struct ASTNode *left;
     struct ASTNode *right;
+    union{
+        int int_value;
+        char * id;
+    }value;
     int value;
     int position;
 };
@@ -51,3 +55,11 @@ struct NESTNode{
     int token;
 
 };
+
+struct SYMNode{
+    char *name;
+    struct SYMNode * next;
+    int priority;
+};
+
+
