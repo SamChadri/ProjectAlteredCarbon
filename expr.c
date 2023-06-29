@@ -42,12 +42,15 @@ struct ASTNode * scan_leaf(){
             n = make_leaf_node(A_INTLIT, token.int_value);
             return (n);
         case T_IDENT:
-            printf("expr::scan_leaf::Making Leaf node for identifier %d \n", token.int_value);
-            if(find_symbol(Text) == NULL)
-                fatals("Unknown variable", Text);
+            printf("expr::scan_leaf::Making Leaf node for identifier %s \n", Text);
+            if(find_symbol(Text) == NULL){
+                fprintf(stderr, "Unknown variable: %s \n", Text);
+                exit(1);
+            }
             n = cmake_leaf_node(A_IDENT, Text);
+            return (n);
         default:
-            fprintf(stderr, "syntax error on line %d, token %s\n", Line, ASTop[token.token]);
+            fprintf(stderr, "expr::scan_leaf::syntax error on line %d, token %s\n", Line, ASTop[token.token]);
             exit(1);
     }
 }

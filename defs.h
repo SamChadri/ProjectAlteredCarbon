@@ -44,7 +44,6 @@ struct ASTNode{
         int int_value;
         char * id;
     }value;
-    int value;
     int position;
 };
 

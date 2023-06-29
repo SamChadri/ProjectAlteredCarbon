@@ -18,7 +18,8 @@ extern_ FILE *Outfile;
 extern_ struct Token token;
 extern_ char Text[TEXTLEN + 1];
 
-extern struct SYMNode * SymHead;
+extern_ struct SYMNode * SymHead;
+extern_ struct NESTNode * NestTail;
 
-extern_ struct symtable Gsym[NSYMBOLS];
+//extern_ struct symtable Gsym[NSYMBOLS];
 

@@ -32,6 +32,7 @@ int asprint(int register);
 
 int asloadsymbol(char *symbol);
 int asstoresymbol(int r, char *symbol);
+void ascreatesymbol(char * symbol);
 
 
 void generate_qasm(struct ASTNode * node);
@@ -49,10 +50,15 @@ struct NESTNode * build_astat_nest();
 struct NESTNode * build_qstat_nest();
 void interpret_astat_nest(struct NESTNode * head);
 void interpret_qstat_nest(struct NESTNode * head);
+void acreate_symbol(char * symbol);
 
 struct SYMNode * create_symbol(char * s, struct SYMNode * next, int priority);
 struct SYMNode * find_symbol(char *s);
+struct SYMNode * find_symbol_pos(char *s);
+struct SYMNode * get_symbol(int position);
 void add_symbol(struct SYMNode * node);
+
+
 
 
 

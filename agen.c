@@ -92,7 +92,7 @@ int asloadint(int val){
 
 int asloadsymbol(char *symbol) {
   // Get a new register
-  int r = alloc_register();
+  int r = allocate_register();
 
   // Print out the code to initialise it
   fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", symbol, reglist[r]);

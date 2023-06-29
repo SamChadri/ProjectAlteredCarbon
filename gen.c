@@ -65,8 +65,12 @@ static int interpret_AST(struct ASTNode *node)
             return asloadint(node->value.int_value);
         case A_IDENT:
             return asloadsymbol(node->value.id);
+        case A_LVIDENT:
+            return find_symbol_pos(node->value.id);
+        case A_ASSIGN:
+            return asstoresymbol(right_register, get_symbol(right_register)->name);
         default:
-            fprintf(stderr, "Do not recognize this symbol");
+            fprintf(stderr, "Unknown AST operator", ASTop[node->op]);
             exit(1);
     }   
 }
@@ -133,6 +137,11 @@ int interpret_asm_AST(struct ASTNode * node )
 int interpret_qasm_AST(struct ASTNode * node){
     struct RegOp retval = q_interpret_AST(node);
     return retval.reg;
+}
+
+void acreate_symbol(char * symbol)
+{
+    ascreatesymbol(symbol);
 }
 
 
