@@ -102,6 +102,15 @@ static struct RegOp q_interpret_AST(struct ASTNode *node)
         case A_INTLIT:
             printf("Running load register\n");
             return load_qregister(node->value.int_value, node->position);
+        case A_IDENT:
+            printf("gen::q_interpret_AST:: Identifier leaf. Finding symbol register...\n");
+            return qfind_symbol_register(node->value.id);
+        case A_LVIDENT:
+            printf("gen::q_interpret_AST:: L-Identifier leaf. Finding symbol register...\n");
+            return qfind_symbol_register(node->value.id);
+        case A_ASSIGN:
+            printf("gen::q_interpret_AST:: Assignement Operator. Assing right register to left\n");
+            return qassign_symbol(left_reg, right_reg);
         default:
             fprintf(stderr, "Do not recognize this symbol");
             exit(1);

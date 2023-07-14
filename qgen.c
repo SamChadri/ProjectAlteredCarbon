@@ -1,10 +1,11 @@
 #include "defs.h"
 #include "data.h"
 #include "decl.h"
-
+#include <stdio.h>
 
 static char * creg_list [] = {"r1","r2","r3"};
-static char * qreg_list [] = {"q1","q2", "psum1", "psum2"};
+static char ** qreg_list;
+static char * init_qreg = {"q1", "q2"};
 enum {
     Q1,
     Q2,
@@ -17,15 +18,30 @@ int pos_reg[2] = {0,0};
 int free_qreg[2] = {FREE_REG,FREE_REG};
 int free_creg[2] = {0,0};
 int num_creg = 2;
-int num_qreg = 2;
+int num_qreg = 4;
 int bit_size = 4;
 
+static void init_registers()
+{
+    qreg_list = (char *) calloc(num_qreg, sizeof(*qreg_list));
+    if(qreg_list == NULL)
+    {
+        fprintf(stderr, "qgen::init_registers:: Calloc failed to allocate memory");
+        exit(1);
+    }
+    qreg_list[0] = "q1";
+    qreg_list[1] = "q2";
+    qreg_list[2] = "psum1";
+    qreg_list[3] = "psum2";
 
+}
 
+//FREE MEMORY ALLOCATED BY REGISTERS!!
 static void free_q_registers(){
     for(int i =0; i < num_qreg; i ++){
         free_qreg[0] = 0;
     }
+    free(qreg_list);
 }
 
 
@@ -191,6 +207,7 @@ static void create_adder_gates(){
 }
 
 void q_load_preamble(){
+    init_registers();
     printf("Loading Preamble...\n");
     fputs("OPENQASM 2.0;\n"
           "include \"qelib1.inc\";\n", Outfile);
@@ -231,8 +248,83 @@ struct RegOp load_qregister(int val, int position){
         }
     }
     //printf("Loading register %s with value %d\n", qreg_list[qreg_num], val);
+    struct RegOp retval = {qreg_num, NO_OP, NULL};
+    return retval;
+}
+
+struct RegOp qfind_symbol_register(char * symbol)
+{
+    int qreg_num = -1 ;
+    for(int i = 0;i < num_qreg; i++)
+    {
+        printf("Comparing Symbol: %s\n", qreg_list[i]);
+        if(!strcmp(symbol, qreg_list[i]))
+        {
+            qreg_num = i;
+            struct RegOp retval = {qreg_num, NO_OP};
+            return retval;
+        }
+    }
+    fprintf(stderr, "qgen::qload_symbol:: %s symbol has not been found", symbol);
+    exit(1);
+
+}
+
+char * qget_symbol(int reg)
+{
+    return qreg_list[reg];
+}
+
+struct RegOp qassign_symbol(int r1, int r2)
+{
+    fprintf(Outfile, "reset %s;\n", qreg_list[r1]);
+
+    for(int i = 0; i < 4; i++)
+    {
+        fprintf(Outfile, "cx %s[%d], %s[%d];\n",qreg_list[r2],i, qreg_list[r1], i );
+    }
+
+    struct RegOp retval = {r1, NO_OP};
+    return retval;
+
+}
+
+//FREE LATER!!!
+struct RegOp qload_symbol(char * symbol, int val)
+{
+    struct RegOp regop = qfind_symbol_register(symbol);
+    int qreg_num = regop.reg;
+    printf("Loading symbol register %s with value %d\n", qreg_list[qreg_num], val);
+    
+    int temp_val  = val;
+    int bit_length = 0;
+    for(int i = 0; val > 0; i++){
+        int bit_val = val % 2;
+        val = val / 2;
+        if(bit_val == 1){
+            fprintf(Outfile, "x %s[%d];\n",qreg_list[qreg_num],i );
+        }
+        bit_length++;
+    }
+
     struct RegOp retval = {qreg_num, NO_OP};
     return retval;
+}
+
+//FREE LATER!!!!
+void qcreate_symbol(char * symbol)
+{
+    char ** tmp = realloc(qreg_list, (num_qreg + 1) * sizeof(*qreg_list));
+
+    if(!tmp)
+    {
+        fprintf(stderr, "qgen::qcreate_symbol::Cannot allocate memory NESTNode. REALLOC error \n");
+        exit(1);
+    }
+    qreg_list = tmp;
+    qreg_list[num_qreg++] = symbol;
+    fprintf(Outfile,"qreg %s[4];\n", symbol);
+    
 }
 //TODO: FIGURE OUT HOW TO CHAIN CARRY BITS
 struct RegOp q_add(int r1, int r2){

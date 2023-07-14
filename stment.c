@@ -55,6 +55,19 @@ static void int_build()
     
 }
 
+static void quint_build()
+{
+    match(T_INT, "int");
+
+    match(T_IDENT, "identifier");
+
+    struct SYMNode * node = create_symbol(Text,NULL, 0);
+    add_symbol(node);
+    qcreate_symbol(node->name);
+    //BACKEND SAVE SYMBOL HERE
+    semi();   
+}
+
 struct NESTNode * assignment_build(struct NESTNode * head)
 {
     struct ASTNode * left,  * right, * tree;
@@ -73,6 +86,7 @@ struct NESTNode * assignment_build(struct NESTNode * head)
     
     
 }
+
 
 
 
@@ -128,10 +142,15 @@ struct NESTNode * build_qstat_nest()
                 head = build(T_MEASURE, "measure", head);
                 break;
             case T_INT:
+                printf("stment::build_qstat_nest:: Qubit Integer Initialization Build\n");
+                quint_build();
                 break;
             case T_IDENT:
+                printf("stment::build_qstat_nest:: Assignment Build\n");
+                head = assignment_build(head);
                 break;
             case T_EOF:
+                printf("stment::build_qstat_nest:: EOF file reached \n");
                 return head;
             default:
                 printf("stment::build_qstat_nest::Unexpected token %d on line %d", token.token, Line);
@@ -186,6 +205,13 @@ void interpret_qstat_nest(struct NESTNode * head)
             case T_MEASURE:
                 reg = interpret_qasm_AST(counter->nest);
                 measure_result(reg);
+                break;
+            case T_INT:
+                printf("stment::interpret_qstat_nest:: Integer initialization already interpreted\n");
+                break;
+            case T_IDENT:
+                printf("stment::interpret_qstat_nest:: Interpreting identifiers to assembly\n");
+                reg = interpret_qasm_AST(counter->nest);
                 break;
             default:
                 printf("stment::interpret_qstat_nest::Unexpected error occured with token %d\n", counter->token);

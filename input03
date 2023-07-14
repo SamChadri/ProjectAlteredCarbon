@@ -1,1 +1,5 @@
-measure 3 * 2;
+int fred;
+int jim;
+fred= 5;
+jim= 12;
+measure fred + jim;

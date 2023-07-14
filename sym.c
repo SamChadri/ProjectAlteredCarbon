@@ -24,7 +24,7 @@ struct SYMNode * find_symbol(char *s)
 
     return NULL;
 }
-struct SYMNode * find_symbol_pos(char *s)
+int find_symbol_pos(char *s)
 {
     struct SYMNode * counter = SymHead;
 

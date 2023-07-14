@@ -19,6 +19,12 @@ int measure_result(int reg);
 struct RegOp load_qregister(int val, int position);
 void q_load_preamble();
 
+void qcreate_symbol(char * symbol);
+struct RegOp qload_symbol(char * symbol, int val);
+struct RegOp qassign_symbol(int r1, int r2);
+struct RegOp qfind_symbol_register(char * symbol);
+char * qget_symbol(int reg);
+
 void aspreamble();
 void aspostamble();
 void free_all_registers();
@@ -33,6 +39,9 @@ int asprint(int register);
 int asloadsymbol(char *symbol);
 int asstoresymbol(int r, char *symbol);
 void ascreatesymbol(char * symbol);
+
+
+
 
 
 void generate_qasm(struct ASTNode * node);
@@ -52,11 +61,16 @@ void interpret_astat_nest(struct NESTNode * head);
 void interpret_qstat_nest(struct NESTNode * head);
 void acreate_symbol(char * symbol);
 
+
+
 struct SYMNode * create_symbol(char * s, struct SYMNode * next, int priority);
 struct SYMNode * find_symbol(char *s);
-struct SYMNode * find_symbol_pos(char *s);
+int find_symbol_pos(char *s);
 struct SYMNode * get_symbol(int position);
 void add_symbol(struct SYMNode * node);
+
+
+
 
 
 
