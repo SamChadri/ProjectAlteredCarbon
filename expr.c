@@ -15,18 +15,30 @@ int token_op(int tok){
             return A_DIVIDE;
         case T_INTLIT:
             return A_INTLIT;
+        case T_EQ:
+            return A_EQ;
+        case T_NE:
+            return A_NE;
+        case T_LT:
+            return A_LT;
+        case T_GT:
+            return A_GT;
+        case T_LE:
+            return A_LE;
+        case T_GE:
+            return A_GE;
         default:
             fprintf(stderr, "Unknown token found in token_op() on line %d\n", Line);
             exit(1);
     }
 }
-static char *ASTop[] = { "+", "-", "*", "/"};
-static int OpPrec[] = { 0, 0, 10, 10};
+static char *ASTop[] = { "+", "-", "*", "/", "=", "!=", "<", ">", "<=", ">="};
+static int OpPrec[] = { 0, 0, 10, 10, 20, 20, 30, 30, 30, 30};
 
 static int op_precedence(int tokentype) {
 
     int prec = OpPrec[tokentype];
-    if (prec != 0 && prec != 10) {
+    if (prec < 0 || prec > 30) {
         fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
         exit(1);
     }
@@ -74,6 +86,7 @@ struct ASTNode * pratt_create_tree(int ptp, struct ASTNode *left)
         return left;
     }
     int op_token = token_op(token.token);
+    printf("TOKEN PROCESSED \n");
 
     n = make_ast_node(op_token, NULL, NULL, 0);
     printf("Creating token node: %s \n", ASTop[op_token]);

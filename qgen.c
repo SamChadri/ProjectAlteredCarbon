@@ -65,6 +65,7 @@ static int allocate_creg(){
 static int allocate_qreg(int position){
     printf("Allocating register...\n");
     for(int i = 0; i < num_qreg; i++){
+        /* HAVE TO FIND A WAY TO RESTORE VALUE OF PREVIOUS REGISTER
         if(pos_reg[position] == 1 && free_qreg[i] == ALLOCATED_REG)
         {
             //CREATE POSITION ENUM LATER MAYBE
@@ -74,9 +75,10 @@ static int allocate_qreg(int position){
             return i;
 
         }
+        */
         if(free_qreg[i] == FREE_ALLOC_REG){
             printf("FOUND 2...\n");
-            free_qreg[i] = 1;
+            free_qreg[i] = ALLOCATED_REG;
             pos_reg[position] = 1;
             printf("Found already created register %s\n", qreg_list[i]);
 
@@ -283,7 +285,7 @@ struct RegOp qassign_symbol(int r1, int r2)
     {
         fprintf(Outfile, "cx %s[%d], %s[%d];\n",qreg_list[r2],i, qreg_list[r1], i );
     }
-
+    reset_qreg(r2);
     struct RegOp retval = {r1, NO_OP};
     return retval;
 
@@ -335,7 +337,7 @@ struct RegOp q_add(int r1, int r2){
         qreg_list[r2], qreg_list[r2], qreg_list[r2], qreg_list[r2]);
     
     fprintf(Outfile,
-            "measure carry[0] -> ans[4];\n"
+            "measure carry[1] -> ans[4];\n"
             "reset carry[1];\n"
             "reset carry[0];\n"
     );
@@ -419,6 +421,8 @@ struct RegOp q_multiply(int r1, int r2){
            qreg_list[r1],qreg_list[r1],qreg_list[r1],qreg_list[r2],
            qreg_list[r1],qreg_list[r1],qreg_list[r1],qreg_list[r2]
     );
+    reset_qreg(r1);
+    reset_qreg(r2);
     struct RegOp retval = {PSUM2, SUBTRACT_REG};
     return retval;
 }

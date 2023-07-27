@@ -3,7 +3,7 @@
 #include "data.h"
 #include "decl.h"
 
-static char *ASTop[] = { "+", "-", "*", "/" };
+static char *ASTop[] = { "+", "-", "*", "/", "=", "!=", "<", ">", "<=", ">="};
 
 int interpretAST(struct ASTNode * node){
    int lresult, rresult; 
@@ -40,14 +40,16 @@ int interpretAST(struct ASTNode * node){
 
 static int interpret_AST(struct ASTNode *node)
 {
-   int left_register, right_register; 
+    int left_register, right_register; 
+    printf("Current AST operator : %d\n", node->op);
+
     if(node->left != NULL){
         left_register = interpret_AST(node->left);
     }
     if(node->right != NULL){
         right_register = interpret_AST(node->right);
     }
-
+    
       // Debug: Print what we are about to do
 
 
@@ -62,15 +64,33 @@ static int interpret_AST(struct ASTNode *node)
         case A_DIVIDE:
             return asdivide(left_register, right_register);
         case A_INTLIT:
+            printf("Loading integer: %d\n", node->value.int_value);
             return asloadint(node->value.int_value);
         case A_IDENT:
             return asloadsymbol(node->value.id);
         case A_LVIDENT:
             return find_symbol_pos(node->value.id);
         case A_ASSIGN:
-            return asstoresymbol(right_register, get_symbol(right_register)->name);
+            asstoresymbol(right_register, get_symbol(left_register)->name);
+            return left_register;
+        case A_EQ:
+            return asequal(left_register, right_register);
+        case A_NE:
+            return asnotequal(left_register, right_register);
+        case A_LT:
+            return aslessthan(left_register, right_register);
+        case A_GT:
+            return asgreaterthan(left_register, right_register);
+        case A_LE:
+        {
+            int retval = aslessequal(left_register, right_register);
+            printf("retval for aslessequal: %d\n", retval);
+            return retval;
+        }
+        case A_GE:
+            return asgreaterequal(left_register, right_register);
         default:
-            fprintf(stderr, "Unknown AST operator", ASTop[node->op]);
+            fprintf(stderr, "Unknown AST operator : %s\n", ASTop[node->op]);
             exit(1);
     }   
 }
@@ -140,7 +160,9 @@ void generate_asm(struct ASTNode * node)
 
 int interpret_asm_AST(struct ASTNode * node )
 {
-    return interpret_AST(node);
+    int retval = interpret_AST(node);
+    printf("interpret_asm_AST::Finished with value: %d\n", retval);
+    return retval;
 }
 
 int interpret_qasm_AST(struct ASTNode * node){

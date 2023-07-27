@@ -127,7 +127,37 @@ int scan(struct Token *t)
             t->token = T_SEMI;
             break;
         case '=':
-            t->token = T_EQUALS;
+            if((c = next()) == '='){
+                t->token = T_EQ;
+            }else{
+                putback(c);
+                t->token = T_ASSIGN;
+            }
+            break;
+        case '!':
+            if((c = next()) == '='){
+                t->token = T_NE;
+            }else{
+                printf("scan::scan()::Unrecognised character %s on line %d\n", c, Line);
+                exit(1);
+            }
+            break;
+        case '<':
+            if((c = next()) == '='){
+                t->token = T_LE;
+                printf("scan:: Token -> '<=' \n");
+            }else{
+                putback(c);
+                t->token = T_LT;
+            }
+            break;
+        case '>':
+            if((c = next()) == '='){
+                t->token = T_GE;
+            }else{
+                putback(c);
+                t->token = T_GT;
+            }
             break;
         default:
             if(isdigit(c)){

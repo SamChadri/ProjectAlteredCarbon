@@ -40,7 +40,12 @@ int asloadsymbol(char *symbol);
 int asstoresymbol(int r, char *symbol);
 void ascreatesymbol(char * symbol);
 
-
+int asequal(int r1, int r2);
+int asnotequal(int r1, int r2);
+int aslessthan(int r1, int r2);
+int asgreaterthan(int r1, int r2);
+int aslessequal(int r1, int r2);
+int asgreaterequal(int r1, int r2);
 
 
 

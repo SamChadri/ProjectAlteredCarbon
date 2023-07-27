@@ -1,0 +1,6 @@
+int x;
+x= 7 < 9;  print x;
+x= 10 > 13; print x;
+x= 7 != 9; print x;
+
+

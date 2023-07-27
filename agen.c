@@ -7,6 +7,7 @@
 static const int num_reg = 4;
 static int free_reg[num_reg];
 static char *reglist[4] = { "%r8", "%r9", "%r10", "%r11" };
+static char *breglist[4] = { "%r8b", "%r9b", "%r10b", "%r11b" };
 
 
 void free_all_registers(){
@@ -96,12 +97,34 @@ int asloadsymbol(char *symbol) {
 
   // Print out the code to initialise it
   fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", symbol, reglist[r]);
+  printf("agen::asloadsymbol:: Allocated register %d for symbol %s\n", r, symbol);
   return (r);
 }
+
+static int ascompare(int r1, int r2, char * how)
+{
+    fprintf(Outfile, "\tcmpq\t%s, %s\n", reglist[r2], reglist[r1]);
+    fprintf(Outfile, "\t%s\t%s\n", how, breglist[r2]);
+    fprintf(Outfile, "\tandq\t$255, %s\n", reglist[r2]);
+    free_register(r1);
+    printf("ascompare:: completed for %s\n", how);
+    return r2;
+}
+int asequal(int r1, int r2) { return(ascompare(r1, r2, "sete")); }
+int asnotequal(int r1, int r2) { return(ascompare(r1, r2, "setne")); }
+int aslessthan(int r1, int r2) { return(ascompare(r1, r2, "setl")); }
+int asgreaterthan(int r1, int r2) { return(ascompare(r1, r2, "setg")); }
+int aslessequal(int r1, int r2) {
+    int retval =  ascompare(r1, r2, "setle");
+    printf("aslessequal:: completed ascompare with value : %d\n", retval); 
+    return retval;
+}
+int asgreaterequal(int r1, int r2) { return(ascompare(r1, r2, "setge")); }
 
 
 int asstoresymbol(int r, char *symbol) {
   fprintf(Outfile, "\tmovq\t%s, %s(\%%rip)\n", reglist[r], symbol);
+  free_register(r);
   return (r);
 }
 

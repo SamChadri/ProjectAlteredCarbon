@@ -11,5 +11,10 @@ test: comp
 	cc -o out out.s
 	./out
 
+test2: comp
+	./comp input02
+	cc -o out out.s
+	./out
+
 q_test: comp
 	./comp input03 -q

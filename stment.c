@@ -74,7 +74,7 @@ struct NESTNode * assignment_build(struct NESTNode * head)
     match(T_IDENT, "identifier");
     left =  cmake_leaf_node(A_LVIDENT, Text);
 
-    if(T_EQUALS != token.token)
+    if(T_ASSIGN != token.token)
     {
         printf("stment::build:: = expected on line %d\n", ";", Line);
         exit(1);
@@ -174,6 +174,7 @@ void interpret_astat_nest(struct NESTNode * head)
             case T_PRINT:
                 printf("stment::interpret_astat_nest::Interpreting TOKEN: %d, T_PRINT: %d to assembly\n", counter->token, T_PRINT);
                 reg = interpret_asm_AST(counter->nest);
+                printf("Finished inteprenting T_PRINT Token with result: %d\n", reg);
                 asprint(reg);
                 break;
             case T_INT:
@@ -182,6 +183,7 @@ void interpret_astat_nest(struct NESTNode * head)
             case T_IDENT:
                 printf("stment::interpret_astat_nest:: Interpreting identifiers to assembly\n");
                 reg = interpret_asm_AST(counter->nest);
+                printf("stmenet::completed interpreting identifers to assembly\n");
                 break;
             default:
                 printf("stment::interpret_astat_nest::Unexpected error occured with token %d\n", counter->token);
