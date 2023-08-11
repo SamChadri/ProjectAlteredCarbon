@@ -24,6 +24,7 @@ enum{
     ADD_REG,
     SUBTRACT_REG,
     MULTI_REG,
+    COMP_REG
 };
 
 enum {

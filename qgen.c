@@ -10,7 +10,8 @@ enum {
     Q1,
     Q2,
     PSUM1,
-    PSUM2
+    PSUM2,
+    GQIT,
 };
 
 
@@ -18,7 +19,7 @@ int pos_reg[2] = {0,0};
 int free_qreg[2] = {FREE_REG,FREE_REG};
 int free_creg[2] = {0,0};
 int num_creg = 2;
-int num_qreg = 4;
+int num_qreg = 5;
 int bit_size = 4;
 
 static void init_registers()
@@ -33,6 +34,7 @@ static void init_registers()
     qreg_list[1] = "q2";
     qreg_list[2] = "psum1";
     qreg_list[3] = "psum2";
+    qreg_list[4] = "gqit";
 
 }
 
@@ -194,10 +196,28 @@ static void create_adder_gates(){
     );
 
     fputs("gate mult31 a1,a2,a3,b1,c1,c2,c3{ \n"
-          "ccx a1,b1,c1;\n"
-          "ccx a2,b1,c2;\n"
-          "ccx a3,b1,c3;\n"
+          "\tccx a1,b1,c1;\n"
+          "\tccx a2,b1,c2;\n"
+          "\tccx a3,b1,c3;\n"
           "}\n",
+          Outfile
+    );
+
+    fputs("gate gthan a, b, c { \n"
+          "\tcx b, a;\n"
+          "\tccx c, b, a;\n",
+          Outfile
+    );
+
+    fputs("gate lthan a, b, c { \n"
+          "\tcx c, a;"
+          "\tccx c, b, a;",
+          Outfile
+    );
+
+    fputs("gate gthan a, b, c { \n"
+          "\tcx b, a;"
+          "\tcx c, a;",
           Outfile
     );
 
@@ -426,6 +446,66 @@ struct RegOp q_multiply(int r1, int r2){
     struct RegOp retval = {PSUM2, SUBTRACT_REG};
     return retval;
 }
+
+struct RegOp q_equal(int r1, int r2){
+    fprintf(Outfile,
+        "equals gqit, %s[3], %s[3];\n"
+
+        "measure gqit -> gbit;\n"
+
+        "if(gbit == 0) equals gqit, %s[2], %s[2];"
+
+        "measure gqit -> gbit;\n"
+
+        "if(gbit == 0) equals gqit, %s[1], %s[1];\n"
+
+        "measure gqit -> gbit;\n"
+
+        "if(gbit == 0) equals gqit, %s[0], %s[0];\n"
+
+        "measure gqit -> gbit;\n"
+    );
+    reset_qreg(r1);
+    reset_qreg(r2);
+    struct RegOp retval = {GQIT, COMP_REG};
+    return retval;
+
+}
+
+struct RegOp q_not_equal(int r1, int r2){
+    fprintf(Outfile,
+        "equals gqit, %s[3], %s[3];\n"
+
+        "measure gqit -> gbit;\n"
+
+        "if(gbit == 0) equals gqit, %s[2], %s[2];"
+
+        "measure gqit -> gbit;\n"
+
+        "if(gbit == 0) equals gqit, %s[1], %s[1];\n"
+
+        "measure gqit -> gbit;\n"
+
+        "if(gbit == 0) equals gqit, %s[0], %s[0];\n"
+
+        "measure gqit -> gbit;\n"
+    );
+    reset_qreg(r1);
+    reset_qreg(r2);
+    struct RegOp retval = {GQIT, COMP_REG};
+    return retval;
+    
+
+}
+
+struct RegOp q_greater_than(){
+
+}
+
+struct RegOp q_less_than(){
+
+}
+
 
 int measure_result(int reg){
 
